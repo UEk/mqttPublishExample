@@ -1,15 +1,16 @@
 Publishing data from an arduino device to IBM Bluemix
 ======
-This is a template for setting up an arduino sketch to communicate with [IBM Bluemix IoT](http://www.ibm.com/cloud-computing/bluemix/internet-of-things/) using [MQTT](http://mqtt.org).
+This is a template sketch for setting up an arduino card as an [MQTT](http://mqtt.org) client to communicate with an MQTT broker.
 
-It is an alternative to the [samples from IBM](https://github.com/ibm-messaging/iot-arduino), still providing similar functionality. This sketch uses a different MQTT library, has a smaller footprint, and can also run on Arduino Due.
+The settings are configured for [IBM Bluemix IoT](http://www.ibm.com/cloud-computing/bluemix/internet-of-things/), but the sketch should be general enough to use with other MQTT brokers (but may require some modifications).  
+This is an alternative to the [sample sketches from IBM](https://github.com/ibm-messaging/iot-arduino), providing similar functionality. This sketch uses a different MQTT library, has a smaller footprint, and can also run on Arduino Due.
 
 Features
 ------
-- Connects an arduino card as a registered device to the IBM Bluemix IoT platform
+- Connects an Arduino card as a registered device to an MQTT broker, in particular the IBM Bluemix IoT platform
 - Uses the [pubsubclient MQTT library](http://pubsubclient.knolleary.net) by [Nick O'Leary](http://knolleary.net/about/).
 - Uses the [arduinoJson library](https://github.com/bblanchon/ArduinoJson) to format the MQTT payload correctly for IBM Bluemix. You need to install these two libraries in your arduino IDE ([see instructions here](https://www.arduino.cc/en/Guide/Libraries)).
-- Sketch developed for wifi (easy to convert to ethernet)
+- Sketch developed for wifi (easy to convert to ethernet since network connection is separated from broker connection)
 - Works on several cards, from Uno (AVR) to Due (ARM Cortex-M3)
 - Fairly memory efficient (uses about 50% of the memory on Arduino Uno, 5% on Arduino Due, including all libraries)
 - MIT License
@@ -18,7 +19,19 @@ Preconditions
 ------
 It assumes that you have already registered your device, see e.g. [Connecting to IBM Bluemix* Internet of Things using MQTT](https://software.intel.com/en-us/articles/connecting-to-ibm-bluemix-internet-of-things-using-mqtt)
 
-Setting up the parameters for the broker
+Principal program flow
+------
+1. Declare the two constructors to 1) connect to wifi and 2) setting upp an MQTT client
+2. Connect to the local wifi network
+3. Enter broker details, such as ip-address
+4. Create the message data string (this sketch uses JSON)
+5. Connect client to the broker if no connection in place (with proper authentication)
+6. Publish data
+7. Loop() client to handle incoming messages
+8. Wait
+9. Repeat steps 4. to 8. ad infinitum
+
+Setting up the parameters for the IBM Bluemix broker
 ------
 
 The following information is from [Intel](https://software.intel.com/en-us/articles/connecting-to-ibm-bluemix-internet-of-things-using-mqtt), on how to communicate with IBM Bluemix as an MQTT broker, but seems to work perfectly nonetheless:
@@ -52,4 +65,4 @@ This code is heavily inspired by
 - [Tutorial](https://developer.ibm.com/recipes/tutorials/connect-an-arduino-uno-device-to-the-ibm-internet-of-things-foundation/) from IBM
 
 
-Found this sketch useful? Please star this project!
+Found this sketch useful? Please star this project or drop me a note!
