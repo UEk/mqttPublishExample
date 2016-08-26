@@ -21,7 +21,7 @@
 
 /* Set this to 'true' to use terminal output, the the sketch will halt until a terminal is connected
  * Set to 'false' to just run the sketch with no serial terminal connected */
-#define TERMINAL true
+#define TERMINAL false
 
 /* Generic definitions for all devices connected to Bluemix */
 #define MQTT_PORT 1883
@@ -37,10 +37,18 @@
 #define MQTT_PASSWORD "KOJLuhiugb#76jhAGf"
 #define DEVICE_ID "78c40e01d2fe"  /* not really used seprately in the MQTT comm */
 
-/* Update these with values suitable for your network. */
+/* Functions to help the structure of the code in setup() and loop() */
+void callback(char* topic, byte* payload, unsigned int length);
+void reconnectToBroker(void);
+double getSensorValue(void);
+int connectToNetwork(void);  /* Function dealing with the connection to Wifi or ethernet */
+
+/* Update these global variables with values suitable for your network. */
 //byte mac[] = { 0x00, 0xAA, 0xBB, 0xCC, 0xDE, 0x03 };  /* Not used */
 char ssid[] = "iot";	/* the name of the wifi network */
+//char passwd[] = "Please!"
 
+/* Global variables and instances used in multiple functions */
 int status = WL_IDLE_STATUS;	/* the wifi radio's status */
 
 WiFiClient wclient;	/* construct a wifi client based on WiFi.h */
@@ -49,11 +57,6 @@ PubSubClient client(wclient);	/* construct the object for the MQTT client based 
 //EthernetClient ethClient;	/* construct a ethernet client */
 //PubSubClient client(ethClient);
 
-/* Functions to help the structure of the code in setup() and loop() */
-void callback(char* topic, byte* payload, unsigned int length);
-void reconnectToBroker(void);
-double getTemp(void);
-int connectToNetwork(void);  /* Function dealing with the connection to Wifi or ethernet */
 
 void setup() 
 {
@@ -72,7 +75,7 @@ void loop()
   JsonObject& payload = jsonBuffer.createObject();  /*create the payload object */
   JsonObject& data = payload.createNestedObject("d");  /* Bluemix has all data as a singe tuple {d:data} */
   data["myName"] = "Arduino Uno";  /* 1st data item */
-  data["temperature"] = double_with_n_digits(getTemp(), 2); /* 2nd data item */
+  data["temperature"] = double_with_n_digits(getSensorValue(), 2); /* 2nd data item */
   payload.printTo(buffer, sizeof(buffer));	/* convert to buffer, which is the string to be used as the message */
 
   if (!client.connected())  /* client disconnected from the MQTT broker? */
@@ -80,8 +83,7 @@ void loop()
     reconnectToBroker();  /* if disconnected, reconnect to the broker */
   }
   
-  if (client.publish(MQTT_TOPIC, buffer) && TERMINAL)
-  /* publish the payload in buffer[], print if ok */
+  if (client.publish(MQTT_TOPIC, buffer) && TERMINAL)  /* publish the payload in buffer[], print if ok */
   {
       Serial.print("Message published: ");
       Serial.println(buffer);
@@ -115,8 +117,9 @@ void callback(char* topic, byte* payload, unsigned int length)
 }
 
 
-double getTemp(void)
-/* Fake random sensor values */
+double getSensorValue(void)
+/* Fake random temperature sensor values 20-25 C
+ * Rewrite according to your own needs */
 {
   double t;
   
@@ -150,10 +153,9 @@ int connectToNetwork(void)
     while (true);  /* wait here for eternity */
   }
   
-  String fv = WiFi.firmwareVersion();
-  if (TERMINAL && (fv != "1.1.0"))
+  if ((WiFi.firmwareVersion() != "1.1.0") && TERMINAL)
   {
-    Serial.println("Please upgrade the firmware to 1.1.0");
+    Serial.println("Please upgrade the firmware to 1.1.0!");
   }
 
   while (status != WL_CONNECTED)	/* attempt to connect to Wifi network */
@@ -198,15 +200,12 @@ void reconnectToBroker(void)
       //client.publish(MQTT_TOPIC, "hello world");	/* Once connected, publish an announcement */
       client.subscribe(MQTT_SUBSCRIBE_TOPIC);	/* resubscribe */
     } 
-    else 
+    else if (TERMINAL)
     {
-      if (TERMINAL)
-      {
-        Serial.print("failed, rc = ");
-      	Serial.print(client.state());
-      	Serial.println(", try again in 5 seconds");
-      }
-      delay(5000);
+      Serial.print("failed, rc = ");
+    	Serial.print(client.state());
+    	Serial.println(", try again in 5 seconds");
     }
+    delay(5000);
   }
 }
