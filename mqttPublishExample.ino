@@ -60,7 +60,16 @@ PubSubClient client(wclient);	/* construct the object for the MQTT client based 
 
 void setup() 
 {
-  connectToNetwork();	/* connect to the wifi SSID network */
+  if (TERMINAL)
+  {
+    Serial.begin(9600);  /* Initialize the serial port */
+    while (!Serial) 
+    {
+      ; /* wait for the port to connect. Needed only for Leonardo according to Arduino */
+    }
+  }
+  
+	connectToNetwork();	/* connect to the wifi SSID network */
 	
   client.setServer(MQTT_SERVER, MQTT_PORT); /* Setting MQTT server details */
   client.setCallback(callback); /* Set callback function for subscription from MQTT broker*/
@@ -135,15 +144,7 @@ int connectToNetwork(void)
  * https://www.arduino.cc/en/Tutorial/WebClient */
 {
   int success = false;
-  if (TERMINAL)
-  {
-    Serial.begin(9600);  /* Initialize the serial port */
-    while (!Serial) 
-    {
-      ; /* wait for the port to connect. Needed only for Leonardo according to Arduino */
-    }
-  }
-
+  
   if (WiFi.status() == WL_NO_SHIELD)  /* check if wifi shield is present */
   {
     if (TERMINAL)
@@ -153,10 +154,12 @@ int connectToNetwork(void)
     while (true);  /* wait here for eternity */
   }
   
-  if ((WiFi.firmwareVersion() != "1.1.0") && TERMINAL)
-  {
-    Serial.println("Please upgrade the firmware to 1.1.0!");
-  }
+  String fv = WiFi.firmwareVersion();
+	if (fv != "1.1.0")
+	{
+		Serial.println("Please upgrade the firmware");
+	}
+ 
 
   while (status != WL_CONNECTED)	/* attempt to connect to Wifi network */
   {

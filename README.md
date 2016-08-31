@@ -5,6 +5,8 @@ This is a template sketch for setting up an arduino card as an [MQTT](http://mqt
 The settings are configured for [IBM Bluemix IoT](http://www.ibm.com/cloud-computing/bluemix/internet-of-things/), but the sketch should be general enough to use with other MQTT brokers (but may require some modifications).  
 This is an alternative to the [sample sketches from IBM](https://github.com/ibm-messaging/iot-arduino), providing similar functionality. This sketch uses a different MQTT library, has a smaller footprint, and can also run on Arduino Due.
 
+Look at [HiveMQ's MQTT Essentials](http://www.hivemq.com/mqtt-essentials/) for a thorough introduction.
+
 Features
 ------
 - Connects an Arduino card as a registered device to an MQTT broker, in particular the IBM Bluemix IoT platform
@@ -40,9 +42,9 @@ The following information is from [Intel](https://software.intel.com/en-us/artic
 
 - `MQTT_CLIENTID` - use `d:\<Your organization ID\>:\<Your device type\>:\<Your device ID\>`
 
-- `MQTT_TOPIC` - use `iot-2/evt/status/fmt/json`
+- `MQTT_TOPIC` - use `iot-2/evt/status/fmt/json`. Note that in general the MQTT topic is not fixed, but Bluemix limits how the topic can be formulated.
 
-- `MQTT_USERNAME` - use `use-token-auth`
+- `MQTT_USERNAME` - use `use-token-auth` since Bluemix only relies on the token
 
 - `MQTT_PASSWORD` - use the string with the authorization token of your device
 
